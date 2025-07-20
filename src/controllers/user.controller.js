@@ -303,6 +303,17 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
 
     //TODO: delete old image - assignment
 
+    const oldUser = await User.findById(req.user?._id)
+    if(!oldUser) {
+        throw new ApiError(404, "User not found")
+    }
+
+    await deleteFromCloudinary(
+        oldUser?.avatar?.publicId,
+        oldUser?.avatar?.resource_type
+    )
+
+
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
     if (!avatar.url) {
@@ -313,8 +324,10 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
-                avatar: avatar.url
+            $set: {
+            "avatar.url": avatar.url,
+            "avatar.publicId": avatar.public_id,
+            "avatar.resource_type": avatar.resource_type
             }
         },
         {new: true}
@@ -336,6 +349,16 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
 
     //TODO: delete old image - assignment
 
+    const oldUser = await User.findById(req.user?._id)
+    if(!oldUser) {
+        throw new ApiError(404, "User not found")
+    }
+    await deleteFromCloudinary(
+        oldUser?.coverImage?.publicId,
+        oldUser?.coverImage?.resource_type
+    )
+
+
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
@@ -348,7 +371,9 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
         req.user?._id,
         {
             $set:{
-                coverImage: coverImage.url
+                "coverImage.url": coverImage.url,
+                "coverImage.publicId": coverImage.public_id,
+                "coverImage.resource_type": coverImage.resource_type
             }
         },
         {new: true}
